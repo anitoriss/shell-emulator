@@ -40,11 +40,22 @@ VFS загружается в память из директории на дис
 
 ### Команды
 
-- `ls [args]` - Заглушка: печатает своё имя и аргументы
-- `cd [args]` - Заглушка: печатает своё имя и аргументы
+- `ls [-a] [путь...]` - Содержимое директорий. Без пути - текущая директория. Скрытые файлы (имя с
+  точки) видны только с `-a`. Для файла печатается его имя, при нескольких путях перед каждой
+  директорией выводится заголовок `путь:`
+- `cd [путь]` - Смена текущей директории. Без аргумента - переход в корень `/`. Понимает абсолютные
+  и относительные пути, `.` и `..`
+- `cat файл...` - Выводит содержимое файлов (UTF-8; недекодируемые байты заменяются)
+- `uptime` - Время работы эмулятора, число пользователей и нагрузка, как в UNIX
+- `who` - Пользователь, терминал, время входа и имя хоста, как в UNIX
 - `vfs-init` - Заменяет текущую VFS на VFS по умолчанию и **очищает содержимое директории `--vfs` на
   диске**
 - `exit` - Закрывает эмулятор
+
+Сообщения об ошибках оформлены как в UNIX, например
+`cat: missing.txt: No such file or directory`,
+`cd: docs: Not a directory`,
+`ls: cannot access 'x': No such file or directory`.
 
 `vfs-init` откажется очищать корень диска, домашнюю и текущую директории,
 их родителей и директории с `.git`.
@@ -90,7 +101,8 @@ python -m flake8 src tests
 - `stage2_*` - параметры командной строки и остановка скрипта на ошибке;
 - `stage3_vfs_variants` - разные варианты VFS (минимальный, несколько
   файлов, 5 уровней) и неверный путь;
-- `stage3_vfs_init` - `vfs-init` на **копии** VFS.
+- `stage3_vfs_init` - `vfs-init` на **копии** VFS;
+- `stage4_demo` - `ls`, `cd`, `cat`, `uptime`, `who` на разных VFS.
 
 > Не запускайте `vfs-init` на `examples/vfs/*` напрямую: команда очищает
 > директорию на диске. Восстановить примеры можно командой
@@ -99,20 +111,25 @@ python -m flake8 src tests
 ## 4. Примеры использования
 
 ```
-./run.sh --vfs examples/vfs/deep --prompt "{user}> " \
-    --script examples/startup/stage2_demo.txt
+./run.sh --vfs examples/vfs/deep --prompt "{user}:{cwd}> " \
+    --script examples/startup/stage4_all.txt
 ```
 
 ```
 [debug] --vfs    = 'examples/vfs/deep'
-[debug] --prompt = '{user}> '
-[debug] --script = 'examples/startup/stage2_demo.txt'
+[debug] --prompt = '{user}:{cwd}> '
+[debug] --script = 'examples/startup/stage4_all.txt'
 [debug] VFS loaded: 6 dirs, 5 files
-user> ls -l "my documents" 'other folder'
-ls: args=['-l', 'my documents', 'other folder']
-user> foo
-foo: command not found
-user> vfs-init
-cleared examples/vfs/deep (2 entries removed)
-VFS reset to default
+user:/> ls
+README.txt  etc  home
+user:/> cd home/user/docs
+user:/home/user/docs> ls
+archive  report.txt
+user:/home/user/docs> cat report.txt
+Отчёт за третий квартал 2026 года.
+user:/home/user/docs> cd ../..
+user:/home> cd
+user:/> cat missing.txt
+cat: missing.txt: No such file or directory
+[script] stopped: error on line 30
 ```

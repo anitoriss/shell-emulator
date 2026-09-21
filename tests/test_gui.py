@@ -34,9 +34,15 @@ def test_title_is_built_from_os_data(app):
 
 def test_submit_echoes_command_and_output(app):
     """Введённая команда и её вывод появляются в области вывода."""
-    app.submit("ls a b")
-    assert "alice@box:/$ ls a b" in shown_text(app)
-    assert "ls: args=['a', 'b']" in shown_text(app)
+    app.submit("ls /")
+    assert "alice@box:/$ ls /" in shown_text(app)
+    assert "etc  home  tmp" in shown_text(app)
+
+
+def test_prompt_follows_current_directory(app):
+    """После cd приглашение показывает новую текущую директорию."""
+    app.submit("cd /home")
+    assert app.prompt_var.get() == "alice@box:/home$ "
 
 
 def test_error_is_shown(app):
@@ -54,10 +60,11 @@ def test_show_lines_writes_debug_output(app):
 def test_startup_script_dialog_is_shown(app, tmp_path):
     """Стартовый скрипт показывается как диалог: ввод и вывод."""
     script = tmp_path / "start.txt"
-    script.write_text("ls x\n", encoding="utf-8")
+    script.write_text("cd /home\nls\n", encoding="utf-8")
     app.run_startup(script)
-    assert "alice@box:/$ ls x" in shown_text(app)
-    assert "ls: args=['x']" in shown_text(app)
+    assert "alice@box:/$ cd /home" in shown_text(app)
+    assert "alice@box:/home$ ls" in shown_text(app)
+    assert "user" in shown_text(app)
 
 
 def test_startup_script_error_is_reported(app, tmp_path):

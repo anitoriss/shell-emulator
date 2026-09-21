@@ -1,0 +1,31 @@
+# Все команды этапа 4 на VFS examples/vfs/deep (диск не изменяется).
+# Запуск: --vfs examples/vfs/deep --script examples/startup/stage4_all.txt
+
+# ls: без аргументов, скрытые файлы, путь, файл, несколько путей
+ls
+ls -a
+ls home
+ls /home/user
+ls README.txt
+ls home etc
+
+# cd: относительный путь, вложенный, .., абсолютный, без аргументов
+cd home/user
+ls
+cd docs/archive
+cd ..
+cd /
+cd
+
+# cat: один файл, несколько файлов, файл с русским текстом
+cat README.txt
+cat home/user/hello.txt etc/motd
+cat home/user/docs/report.txt
+
+# uptime и who
+uptime
+who
+
+# Ошибка: скрипт останавливается, следующая строка не выполняется
+cat missing.txt
+ls эта-строка-не-выполнится

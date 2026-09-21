@@ -4,10 +4,10 @@ cd "$(dirname "$0")/.." || exit 1
 export PYTHONPATH=src
 
 echo "== Скрипт с ошибкой: остановка на первой ошибке =="
-python3 -m emulator --vfs ./vfs --prompt "err> " \
+python3 -m emulator --vfs examples/vfs/several --prompt "err> " \
     --script examples/startup/stage2_error.txt
 
 echo "== Несуществующий скрипт: ошибка параметров, код 2 =="
-python3 -m emulator --vfs ./vfs --prompt "err> " \
+python3 -m emulator --vfs examples/vfs/several --prompt "err> " \
     --script examples/startup/missing.txt
 echo "Код завершения: $?"

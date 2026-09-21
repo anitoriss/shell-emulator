@@ -11,8 +11,8 @@ echo "== 2. Только --script =="
 python3 -m emulator --script examples/startup/stage2_demo.txt
 
 echo "== 3. Только --vfs =="
-python3 -m emulator --vfs ./vfs
+python3 -m emulator --vfs examples/vfs/several
 
 echo "== 4. Все параметры вместе =="
-python3 -m emulator --vfs ./vfs --prompt "{user}> " \
+python3 -m emulator --vfs examples/vfs/several --prompt "{user}> " \
     --script examples/startup/stage2_demo.txt

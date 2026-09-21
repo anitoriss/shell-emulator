@@ -13,6 +13,24 @@
 
 ## 2. Описание всех функций и настроек
 
+### Параметры командной строки
+
+- `--vfs PATH` - Путь к физическому расположению VFS
+- `--prompt TEXT` - Приглашение к вводу. Можно использовать `{user}` и `{host}`. По умолчанию
+  `{user}@{host}$ `
+- `--script PATH` - Путь к стартовому скрипту
+
+При запуске все заданные параметры выводятся в консоль и в окно
+(строки `[debug] ...`). Если значение начинается с `-`, пишите
+`--prompt=-> `.
+
+### Стартовый скрипт
+
+Текстовый файл (UTF-8), по одной команде эмулятора в строке. Пустые
+строки и строки, начинающиеся с `#`, пропускаются. На экране показывается
+и ввод, и вывод, как в живом диалоге. Скрипт **останавливается при первой
+ошибке** (или на команде `exit`).
+
 ### Команды
 
 - `ls [args]` - Заглушка: печатает своё имя и аргументы
@@ -38,8 +56,8 @@ pip install -r requirements-dev.txt
 Запуск эмулятора:
 
 ```
-./run.sh          (Linux / macOS)
-run.bat           (Windows)
+./run.sh [параметры]        (Linux / macOS)
+run.bat [параметры]         (Windows)
 ```
 
 Запуск тестов и проверка стиля:
@@ -49,16 +67,29 @@ python -m pytest
 python -m flake8 src tests
 ```
 
+Скрипты для проверки параметров командной строки лежат в `scripts/`
+(`*.sh` для Linux/macOS, `*.bat` для Windows):
+
+- `stage2_all_params` - все параметры сразу;
+- `stage2_each_param` - каждый параметр отдельно;
+- `stage2_script_error` - остановка скрипта на ошибке, неверный путь.
+
 ## 4. Примеры использования
 
 ```
-user@host$ ls -l "my documents"
-ls: args=['-l', 'my documents']
-user@host$ cd 'a b' c
-cd: args=['a b', 'c']
-user@host$ foo
+./run.sh --prompt "demo> " --script examples/startup/stage2_demo.txt
+```
+
+```
+[debug] --vfs    = <not set>
+[debug] --prompt = 'demo> '
+[debug] --script = 'examples/startup/stage2_demo.txt'
+demo> ls
+ls: args=[]
+demo> ls -l "my documents" 'other folder'
+ls: args=['-l', 'my documents', 'other folder']
+demo> foo
 foo: command not found
-user@host$ ls "abc
+demo> ls "abc
 syntax error: unterminated quote
-user@host$ exit
 ```

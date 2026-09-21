@@ -43,3 +43,26 @@ def test_error_is_shown(app):
     """Сообщение об ошибке показывается в окне."""
     app.submit("nope")
     assert "nope: command not found" in shown_text(app)
+
+
+def test_show_lines_writes_debug_output(app):
+    """Служебные строки отображаются в области вывода."""
+    app.show_lines(["[debug] --vfs = <not set>"])
+    assert "[debug] --vfs = <not set>" in shown_text(app)
+
+
+def test_startup_script_dialog_is_shown(app, tmp_path):
+    """Стартовый скрипт показывается как диалог: ввод и вывод."""
+    script = tmp_path / "start.txt"
+    script.write_text("ls x\n", encoding="utf-8")
+    app.run_startup(script)
+    assert "alice@box$ ls x" in shown_text(app)
+    assert "ls: args=['x']" in shown_text(app)
+
+
+def test_startup_script_error_is_reported(app, tmp_path):
+    """Остановка скрипта из-за ошибки отмечается в окне."""
+    script = tmp_path / "start.txt"
+    script.write_text("nope\nls\n", encoding="utf-8")
+    app.run_startup(script)
+    assert "[script] stopped: error on line 1" in shown_text(app)

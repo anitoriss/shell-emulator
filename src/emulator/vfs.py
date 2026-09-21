@@ -4,7 +4,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 SEP = "/"
+CURRENT = "."
+PARENT = ".."
 ROOT_NAME = ""
+SKIPPED_PARTS = ("", CURRENT)
 
 DEFAULT_TREE = {
     "home": {"user": {"welcome.txt": "Welcome to the emulator!\n"}},
@@ -14,7 +17,31 @@ DEFAULT_TREE = {
 
 
 class VfsError(Exception):
-    """Ошибка загрузки или работы с VFS."""
+    """Ошибка VFS; текст по умолчанию хранится в атрибуте message."""
+
+    message = "Input/output error"
+
+    def __init__(self, message: str | None = None):
+        """Создать ошибку с собственным текстом или текстом по умолчанию."""
+        super().__init__(message or self.message)
+
+
+class NoEntryError(VfsError):
+    """Путь не существует."""
+
+    message = "No such file or directory"
+
+
+class NotDirError(VfsError):
+    """Ожидалась директория, но найден файл."""
+
+    message = "Not a directory"
+
+
+class IsDirError(VfsError):
+    """Ожидался файл, но найдена директория."""
+
+    message = "Is a directory"
 
 
 @dataclass
@@ -110,3 +137,53 @@ class Vfs:
     def pwd(self) -> str:
         """Вернуть путь текущей директории, например /home/user."""
         return SEP + SEP.join(node.name for node in self.cwd)
+
+    def walk(self, path: str) -> list[Node]:
+        """Пройти по пути и вернуть цепочку узлов от корня (без корня).
+
+        Абсолютный путь начинается с /, иначе отсчёт идёт от текущей
+        директории. Понимает . и .. . Пустой путь - ошибка NoEntryError.
+        """
+        if not path:
+            raise NoEntryError()
+        chain = [] if path.startswith(SEP) else list(self.cwd)
+        for part in path.split(SEP):
+            if part not in SKIPPED_PARTS:
+                self._step(chain, part)
+        return chain
+
+    def node_at(self, path: str) -> Node:
+        """Найти узел по пути (корень, если цепочка пуста)."""
+        return self._tail(self.walk(path))
+
+    def change_dir(self, path: str) -> None:
+        """Сделать директорию path текущей."""
+        chain = self.walk(path)
+        if not self._tail(chain).is_dir:
+            raise NotDirError()
+        self.cwd = chain
+
+    def read_file(self, path: str) -> bytes:
+        """Вернуть содержимое файла path."""
+        node = self.node_at(path)
+        if node.is_dir:
+            raise IsDirError()
+        return node.data
+
+    def _tail(self, chain: list[Node]) -> Node:
+        """Вернуть последний узел цепочки или корень, если она пуста."""
+        return chain[-1] if chain else self.root
+
+    def _step(self, chain: list[Node], part: str) -> None:
+        """Сделать шаг пути: в дочерний узел или на уровень вверх."""
+        here = self._tail(chain)
+        if not here.is_dir:
+            raise NotDirError()
+        if part == PARENT:
+            if chain:
+                chain.pop()
+            return
+        child = here.children.get(part)
+        if child is None:
+            raise NoEntryError()
+        chain.append(child)

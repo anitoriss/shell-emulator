@@ -1,5 +1,6 @@
 """Ядро эмулятора: разбор строки и запуск команд."""
 
+import time
 from pathlib import Path
 
 from emulator.commands import COMMANDS
@@ -31,6 +32,7 @@ class Shell:
         self.prompt_template = prompt
         self.vfs = vfs if vfs is not None else Vfs.default()
         self.vfs_path = vfs_path
+        self.started_at = time.time()
 
     def prompt(self) -> str:
         """Вернуть приглашение к вводу с подставленными значениями."""

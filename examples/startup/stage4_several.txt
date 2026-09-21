@@ -1,0 +1,10 @@
+# Этап 4 на VFS examples/vfs/several: скрытый файл, вложенная папка.
+ls
+ls -a
+cat .secret
+cat notes.md
+cd data
+ls
+cat numbers.txt
+cd ..
+exit

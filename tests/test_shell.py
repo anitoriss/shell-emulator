@@ -1,4 +1,4 @@
-"""Тесты ядра эмулятора: выполнение строк и команды этапа 1."""
+"""Тесты ядра эмулятора: выполнение строк, ошибки, exit."""
 
 import pytest
 
@@ -14,20 +14,6 @@ def shell():
 def test_prompt_uses_user_and_host(shell):
     """Приглашение по умолчанию содержит имя пользователя и хоста."""
     assert shell.prompt() == "alice@box:/$ "
-
-
-def test_ls_stub_prints_name_and_args(shell):
-    """Заглушка ls печатает своё имя и аргументы."""
-    result = shell.execute("ls -l /tmp")
-    assert result.ok
-    assert result.output == "ls: args=['-l', '/tmp']"
-
-
-def test_cd_stub_prints_name_and_args(shell):
-    """Заглушка cd печатает своё имя и аргументы."""
-    result = shell.execute('cd "my dir"')
-    assert result.ok
-    assert result.output == "cd: args=['my dir']"
 
 
 def test_unknown_command_is_error(shell):

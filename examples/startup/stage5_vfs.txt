@@ -1,0 +1,9 @@
+# Этап 5 на VFS deep с добавленной пустой директорией empty_dir.
+ls
+rmdir empty_dir
+ls
+touch created.txt home/user/created_too.txt
+ls
+ls home/user
+cat created.txt
+rmdir home

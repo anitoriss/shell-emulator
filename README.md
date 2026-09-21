@@ -46,6 +46,9 @@ VFS загружается в память из директории на дис
 - `cd [путь]` - Смена текущей директории. Без аргумента - переход в корень `/`. Понимает абсолютные
   и относительные пути, `.` и `..`
 - `cat файл...` - Выводит содержимое файлов (UTF-8; недекодируемые байты заменяются)
+- `touch файл...` - Создаёт пустые файлы в VFS (только в памяти). Существующие файлы не изменяются
+- `rmdir директория...` - Удаляет пустые директории (только в памяти). Нельзя удалить корень,
+  текущую директорию, путь на `.` или `..`, непустую директорию
 - `uptime` - Время работы эмулятора, число пользователей и нагрузка, как в UNIX
 - `who` - Пользователь, терминал, время входа и имя хоста, как в UNIX
 - `vfs-init` - Заменяет текущую VFS на VFS по умолчанию и **очищает содержимое директории `--vfs` на
@@ -55,7 +58,11 @@ VFS загружается в память из директории на дис
 Сообщения об ошибках оформлены как в UNIX, например
 `cat: missing.txt: No such file or directory`,
 `cd: docs: Not a directory`,
-`ls: cannot access 'x': No such file or directory`.
+`ls: cannot access 'x': No such file or directory`,
+`rmdir: failed to remove 'docs': Directory not empty`.
+
+Команды `touch` и `rmdir` меняют только VFS в памяти. Файлы на диске
+остаются нетронутыми; после перезапуска эмулятора изменения теряются.
 
 `vfs-init` откажется очищать корень диска, домашнюю и текущую директории,
 их родителей и директории с `.git`.
@@ -102,7 +109,8 @@ python -m flake8 src tests
 - `stage3_vfs_variants` - разные варианты VFS (минимальный, несколько
   файлов, 5 уровней) и неверный путь;
 - `stage3_vfs_init` - `vfs-init` на **копии** VFS;
-- `stage4_demo` - `ls`, `cd`, `cat`, `uptime`, `who` на разных VFS.
+- `stage4_demo` - `ls`, `cd`, `cat`, `uptime`, `who` на разных VFS;
+- `stage5_demo` - `touch` и `rmdir`; проверяет, что диск не изменился.
 
 > Не запускайте `vfs-init` на `examples/vfs/*` напрямую: команда очищает
 > директорию на диске. Восстановить примеры можно командой
@@ -132,4 +140,17 @@ user:/home> cd
 user:/> cat missing.txt
 cat: missing.txt: No such file or directory
 [script] stopped: error on line 30
+```
+
+Изменение VFS (`./run.sh` без `--vfs`, VFS по умолчанию):
+
+```
+/> ls /
+etc  home  tmp
+/> rmdir /tmp
+/> touch /new.txt /a.txt
+/> ls /
+a.txt  etc  home  new.txt
+/> rmdir /etc
+rmdir: failed to remove '/etc': Directory not empty
 ```

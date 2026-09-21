@@ -13,7 +13,7 @@ def shell():
 
 def test_prompt_uses_user_and_host(shell):
     """Приглашение по умолчанию содержит имя пользователя и хоста."""
-    assert shell.prompt() == "alice@box$ "
+    assert shell.prompt() == "alice@box:/$ "
 
 
 def test_ls_stub_prints_name_and_args(shell):

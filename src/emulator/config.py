@@ -53,7 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--prompt", default=DEFAULT_PROMPT, metavar="TEXT",
-        help="приглашение к вводу; можно использовать {user} и {host}",
+        help="приглашение; можно использовать {user}, {host}, {cwd}",
     )
     parser.add_argument(
         "--script", type=existing_file, metavar="PATH",

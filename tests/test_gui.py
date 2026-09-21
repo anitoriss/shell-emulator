@@ -35,7 +35,7 @@ def test_title_is_built_from_os_data(app):
 def test_submit_echoes_command_and_output(app):
     """Введённая команда и её вывод появляются в области вывода."""
     app.submit("ls a b")
-    assert "alice@box$ ls a b" in shown_text(app)
+    assert "alice@box:/$ ls a b" in shown_text(app)
     assert "ls: args=['a', 'b']" in shown_text(app)
 
 
@@ -56,7 +56,7 @@ def test_startup_script_dialog_is_shown(app, tmp_path):
     script = tmp_path / "start.txt"
     script.write_text("ls x\n", encoding="utf-8")
     app.run_startup(script)
-    assert "alice@box$ ls x" in shown_text(app)
+    assert "alice@box:/$ ls x" in shown_text(app)
     assert "ls: args=['x']" in shown_text(app)
 
 

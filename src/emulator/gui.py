@@ -1,12 +1,15 @@
 """Графический интерфейс эмулятора на tkinter."""
 
 import tkinter as tk
+from pathlib import Path
 from tkinter import scrolledtext
 
 from emulator.result import with_newline
+from emulator.script import run_script
 from emulator.shell import Shell
 
 WINDOW_SIZE = "820x480"
+STARTUP_DELAY_MS = 100
 FONT = "TkFixedFont"
 BACKGROUND = "#1e1e1e"
 FOREGROUND = "#d4d4d4"
@@ -68,6 +71,11 @@ class App:
         self.output.see(tk.END)
         self.output.configure(state="disabled")
 
+    def show_lines(self, lines: list[str]):
+        """Показать служебные строки (например, отладочный вывод)."""
+        for line in lines:
+            self.write(line + "\n")
+
     def submit(self, line: str):
         """Выполнить строку так, как будто её ввёл пользователь."""
         self.write(f"{self.shell.prompt()}{line}\n")
@@ -75,6 +83,24 @@ class App:
         self.write(with_newline(result.output))
         self._refresh_prompt()
         if result.exit_requested:
+            self.root.destroy()
+
+    def start_script(self, path: Path):
+        """Запустить стартовый скрипт сразу после появления окна."""
+        self.root.after(STARTUP_DELAY_MS, self.run_startup, path)
+
+    def run_startup(self, path: Path):
+        """Выполнить скрипт path, имитируя диалог с пользователем."""
+        try:
+            report = run_script(self.shell, path, self.write)
+        except (OSError, UnicodeDecodeError) as error:
+            self.write(f"[script] cannot read {path}: {error}\n")
+            return
+        if not report.ok:
+            line = report.failed_line
+            self.write(f"[script] stopped: error on line {line}\n")
+        self._refresh_prompt()
+        if report.exit_requested:
             self.root.destroy()
 
     def run(self):

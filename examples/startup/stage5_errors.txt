@@ -1,0 +1,5 @@
+# Этап 5: ошибка touch - скрипт останавливается.
+touch /home/user/ok.txt
+ls /home/user
+touch /nope/dir/file.txt
+ls эта-строка-не-выполнится

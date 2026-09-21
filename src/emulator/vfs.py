@@ -1,5 +1,6 @@
 """Виртуальная файловая система (VFS), целиком хранящаяся в памяти."""
 
+import posixpath
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -42,6 +43,18 @@ class IsDirError(VfsError):
     """Ожидался файл, но найдена директория."""
 
     message = "Is a directory"
+
+
+class NotEmptyError(VfsError):
+    """Директория не пуста."""
+
+    message = "Directory not empty"
+
+
+class InvalidError(VfsError):
+    """Недопустимый аргумент (корень, ., .., текущая директория)."""
+
+    message = "Invalid argument"
 
 
 @dataclass
@@ -169,6 +182,47 @@ class Vfs:
         if node.is_dir:
             raise IsDirError()
         return node.data
+
+    def touch(self, path: str) -> None:
+        """Создать пустой файл path, если его ещё нет.
+
+        Если путь уже существует, ничего не происходит (времена
+        изменения в VFS не хранятся).
+        """
+        try:
+            self.walk(path)
+        except NoEntryError:
+            self._create_file(path)
+
+    def remove_dir(self, path: str) -> None:
+        """Удалить пустую директорию path (аналог rmdir).
+
+        Нельзя удалить корень, текущую директорию (и её родителей),
+        а также путь, оканчивающийся на . или .. .
+        """
+        if posixpath.basename(path.rstrip(SEP)) in (CURRENT, PARENT):
+            raise InvalidError()
+        chain = self.walk(path)
+        if not chain:
+            raise InvalidError()
+        target = chain[-1]
+        if not target.is_dir:
+            raise NotDirError()
+        if target.children:
+            raise NotEmptyError()
+        if any(node is target for node in self.cwd):
+            raise InvalidError()
+        del self._tail(chain[:-1]).children[target.name]
+
+    def _create_file(self, path: str) -> None:
+        """Создать пустой файл в существующей родительской директории."""
+        if path.endswith(SEP):
+            raise NoEntryError()
+        parent_path, name = posixpath.split(path)
+        parent = self.node_at(parent_path or CURRENT)
+        if not parent.is_dir:
+            raise NotDirError()
+        parent.children[name] = Node(name, False)
 
     def _tail(self, chain: list[Node]) -> Node:
         """Вернуть последний узел цепочки или корень, если она пуста."""

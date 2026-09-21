@@ -1,0 +1,27 @@
+# Все команды этапа 5 (и предыдущих) на VFS по умолчанию.
+# Диск не затрагивается: изменения происходят только в памяти.
+# Запуск: --script examples/startup/stage5_all.txt (без --vfs)
+# или на VFS с пустой директорией (см. scripts/stage5_demo).
+
+# rmdir: пустая директория (в VFS по умолчанию это /tmp)
+ls /
+rmdir /tmp
+ls /
+
+# touch: новый файл, несколько файлов, файл в подпапке, существующий
+touch /new.txt
+touch /a.txt /b.txt
+touch /home/user/note.txt
+touch /etc/motd
+ls /
+ls /home/user
+cat /new.txt
+cat /etc/motd
+
+# touch возвращает /tmp, потому что rmdir удалил её
+touch /tmp
+ls /
+
+# Ошибки rmdir/touch: скрипт останавливается на первой из них
+rmdir /etc
+ls эта-строка-не-выполнится

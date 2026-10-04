@@ -11,7 +11,7 @@ class ParseError(ValueError):
     """Строку невозможно разобрать (например, не закрыта кавычка)."""
 
 
-class _Lexer:
+class Lexer:
     """Конечный автомат, превращающий строку в список слов."""
 
     def __init__(self, line: str):
@@ -82,4 +82,4 @@ def tokenize(line: str) -> list[str]:
     Обратная косая черта экранирует следующий символ. Пустые кавычки ""
     дают пустой аргумент. Если кавычка не закрыта, бросается ParseError.
     """
-    return _Lexer(line).run()
+    return Lexer(line).run()

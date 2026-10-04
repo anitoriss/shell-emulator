@@ -6,19 +6,26 @@ from emulator.shell import Shell
 from emulator.vfs import Vfs
 
 
+def _write(path, text):
+    """Записать текстовый файл без перевода строк в CRLF на Windows.
+
+    Без newline="" Windows превращает конец строки в тексте в
+    два символа вместо одного, и тесты перестают совпадать с ожиданием.
+    """
+    path.write_text(text, encoding="utf-8", newline="")
+
+
 def build_tree(root):
     """Создать на диске дерево для тестов команд и вернуть его корень."""
     (root / "docs" / "inner").mkdir(parents=True)
     (root / "empty").mkdir()
-    (root / "readme.txt").write_text("root file\n", encoding="utf-8")
-    (root / ".hidden").write_text("h\n", encoding="utf-8")
-    (root / "привет.txt").write_text("Привет\n", encoding="utf-8")
+    _write(root / "readme.txt", "root file\n")
+    _write(root / ".hidden", "h\n")
+    _write(root / "привет.txt", "Привет\n")
     (root / "bin.dat").write_bytes(b"\xff\xfe")
-    (root / "docs" / "a.txt").write_text("A text\n", encoding="utf-8")
-    (root / "docs" / "b.txt").write_text("B text", encoding="utf-8")
-    (root / "docs" / "inner" / "deep.txt").write_text(
-        "deep\n", encoding="utf-8"
-    )
+    _write(root / "docs" / "a.txt", "A text\n")
+    _write(root / "docs" / "b.txt", "B text")
+    _write(root / "docs" / "inner" / "deep.txt", "deep\n")
     return root
 
 

@@ -92,7 +92,15 @@ def _build_node(name: str, spec) -> Node:
 def _load_node(path: Path) -> Node:
     """Рекурсивно прочитать файл или директорию с диска в память."""
     if not path.is_dir():
-        return Node(path.name, False, path.read_bytes())
+        raw = path.read_bytes()
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            data = raw
+        else:
+            normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+            data = normalized.encode("utf-8")
+        return Node(path.name, False, data)
     node = Node(path.name, True)
     for entry in sorted(path.iterdir()):
         if entry.is_symlink():
